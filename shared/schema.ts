@@ -42,12 +42,12 @@ export type Ride = z.infer<typeof rideSchema>;
 export const insertRideSchema = z.object({
   from: z.string().min(2, "From location is required"),
   to: z.string().min(2, "To location is required"),
-  date: z.string().refine((date) => new Date(date) > new Date(), "Date must be in the future"),
-  time: z.string(),
+  date: z.string().min(1, "Date is required"),
+  time: z.string().min(1, "Time is required"),
   vehicleType: z.enum(["car", "bike", "auto", "bus"]),
   availableSeats: z.number().int().min(1, "Must have at least 1 seat"),
   pricePerHead: z.number().min(0, "Price cannot be negative"),
-  whatsappLink: z.string().url("Invalid WhatsApp link"),
+  whatsappLink: z.string().min(1, "WhatsApp link is required"),
   additionalMsg: z.string().optional(),
 });
 
