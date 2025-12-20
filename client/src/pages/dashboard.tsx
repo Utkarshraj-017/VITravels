@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Car, Ticket, Users, ArrowRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TripCard } from "@/components/trip-card";
+import { EditRideDialog } from "@/components/edit-ride-dialog";
+import { DeleteRideDialog } from "@/components/delete-ride-dialog";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Ride, User as UserType, Booking } from "@shared/schema";
 
 interface RideWithCreator extends Ride {
@@ -20,6 +25,9 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [editingRide, setEditingRide] = useState<Ride | null>(null);
+  const [deletingRideId, setDeletingRideId] = useState<string | null>(null);
 
   const { data: rides, isLoading: ridesLoading } = useQuery<RideWithCreator[]>({
     queryKey: ["/api/rides"],
@@ -29,9 +37,45 @@ export default function DashboardPage() {
     queryKey: ["/api/bookings/my"],
   });
 
-  const { data: myRides } = useQuery<Ride[]>({
+  const { data: myRides, isLoading: myRidesLoading } = useQuery<Ride[]>({
     queryKey: ["/api/rides/my"],
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (rideId: string) => {
+      return apiRequest("DELETE", `/api/rides/${rideId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Ride deleted",
+        description: "Your ride has been deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/rides"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rides/my"] });
+      setDeletingRideId(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete ride",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEdit = (ride: Ride) => {
+    setEditingRide(ride);
+  };
+
+  const handleDelete = (rideId: string) => {
+    setDeletingRideId(rideId);
+  };
+
+  const confirmDelete = () => {
+    if (deletingRideId) {
+      deleteMutation.mutate(deletingRideId);
+    }
+  };
 
   const stats: DashboardStats = {
     activeRides: rides?.filter((r) => r.status === "OPEN").length || 0,

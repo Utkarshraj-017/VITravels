@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Car, Bike, Bus, MapPin, Calendar, Clock, Users, IndianRupee } from "lucide-react";
+import { Car, Bike, Bus, Calendar, Clock, Users, IndianRupee, Pencil, Trash2 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +11,12 @@ interface TripCardProps {
   ride: Ride;
   creator?: User;
   onBook?: (rideId: string) => void;
+  onEdit?: (ride: Ride) => void;
+  onDelete?: (rideId: string) => void;
   isBooking?: boolean;
+  isDeleting?: boolean;
   showBookButton?: boolean;
+  showCreatorActions?: boolean;
   currentUserId?: string;
 }
 
@@ -34,8 +38,12 @@ export function TripCard({
   ride,
   creator,
   onBook,
+  onEdit,
+  onDelete,
   isBooking = false,
+  isDeleting = false,
   showBookButton = true,
+  showCreatorActions = false,
   currentUserId,
 }: TripCardProps) {
   const VehicleIcon = vehicleIcons[ride.vehicleType];
@@ -194,6 +202,28 @@ export function TripCard({
             >
               {isBooking ? "Booking..." : "Book Now"}
             </Button>
+          )}
+
+          {showCreatorActions && isCreator && (
+            <>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => onEdit?.(ride)}
+                data-testid={`button-edit-${ride.id}`}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => onDelete?.(ride.id)}
+                disabled={isDeleting}
+                data-testid={`button-delete-${ride.id}`}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </>
           )}
         </div>
       </CardFooter>
