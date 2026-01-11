@@ -40,7 +40,7 @@ const editRideSchema = z.object({
   vehicleType: z.enum(["car", "bike", "auto", "bus"]),
   availableSeats: z.number().int().min(0, "Seats cannot be negative"),
   pricePerHead: z.number().min(0, "Price cannot be negative"),
-  whatsappLink: z.string().min(1, "WhatsApp link is required"),
+  phoneNumber: z.string().regex(/^[0-9]{10}$/, "Please enter a valid 10-digit phone number"),
   additionalMsg: z.string().optional(),
   status: z.enum(["OPEN", "FULL", "CANCELLED"]),
 });
@@ -56,6 +56,11 @@ interface EditRideDialogProps {
 export function EditRideDialog({ ride, open, onOpenChange }: EditRideDialogProps) {
   const { toast } = useToast();
 
+  const getPhoneFromLink = (link: string) => {
+    if (!link) return "";
+    return link.replace("https://wa.me/91", "");
+  };
+
   const form = useForm<EditRideFormData>({
     resolver: zodResolver(editRideSchema),
     defaultValues: {
@@ -66,7 +71,7 @@ export function EditRideDialog({ ride, open, onOpenChange }: EditRideDialogProps
       vehicleType: ride?.vehicleType || "car",
       availableSeats: ride?.availableSeats || 1,
       pricePerHead: ride?.pricePerHead || 0,
-      whatsappLink: ride?.whatsappLink || "",
+      phoneNumber: getPhoneFromLink(ride?.whatsappLink || ""),
       additionalMsg: ride?.additionalMsg || "",
       status: ride?.status || "OPEN",
     },
@@ -82,7 +87,7 @@ export function EditRideDialog({ ride, open, onOpenChange }: EditRideDialogProps
         vehicleType: ride.vehicleType,
         availableSeats: ride.availableSeats,
         pricePerHead: ride.pricePerHead,
-        whatsappLink: ride.whatsappLink,
+        phoneNumber: getPhoneFromLink(ride.whatsappLink),
         additionalMsg: ride.additionalMsg || "",
         status: ride.status,
       });
@@ -91,7 +96,12 @@ export function EditRideDialog({ ride, open, onOpenChange }: EditRideDialogProps
 
   const updateMutation = useMutation({
     mutationFn: async (data: EditRideFormData) => {
-      return apiRequest("PATCH", `/api/rides/${ride?.id}`, data);
+      const { phoneNumber, ...rest } = data;
+      const whatsappLink = `https://wa.me/91${phoneNumber}`;
+      return apiRequest("PATCH", `/api/rides/${ride?.id}`, {
+        ...rest,
+        whatsappLink,
+      });
     },
     onSuccess: () => {
       toast({
@@ -279,12 +289,23 @@ export function EditRideDialog({ ride, open, onOpenChange }: EditRideDialogProps
 
             <FormField
               control={form.control}
-              name="whatsappLink"
+              name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>WhatsApp Link</FormLabel>
+                  <FormLabel>WhatsApp Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://wa.me/..." {...field} data-testid="input-edit-whatsapp" />
+                    <div className="relative">
+                      <SiWhatsapp className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
+                      <div className="flex items-center">
+                        <span className="absolute left-9 text-muted-foreground">+91</span>
+                        <Input
+                          placeholder="XXXXXXXXXX"
+                          className="pl-16"
+                          data-testid="input-edit-phone"
+                          {...field}
+                        />
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -333,3 +354,4 @@ export function EditRideDialog({ ride, open, onOpenChange }: EditRideDialogProps
     </Dialog>
   );
 }
+import { SiWhatsapp } from "react-icons/si";

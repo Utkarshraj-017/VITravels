@@ -50,7 +50,7 @@ const createRideSchema = z.object({
   }),
   availableSeats: z.coerce.number().int().min(1, "Must have at least 1 seat"),
   pricePerHead: z.coerce.number().min(0, "Price cannot be negative"),
-  whatsappLink: z.string().url("Please enter a valid WhatsApp link"),
+  phoneNumber: z.string().regex(/^[0-9]{10}$/, "Please enter a valid 10-digit phone number"),
   additionalMsg: z.string().optional(),
 });
 
@@ -77,14 +77,19 @@ export default function CreateRidePage() {
       vehicleType: undefined,
       availableSeats: 1,
       pricePerHead: 0,
-      whatsappLink: "",
+      phoneNumber: "",
       additionalMsg: "",
     },
   });
 
   const createRideMutation = useMutation({
     mutationFn: async (data: CreateRideForm) => {
-      const response = await apiRequest("POST", "/api/rides", data);
+      const { phoneNumber, ...rest } = data;
+      const whatsappLink = `https://wa.me/91${phoneNumber}`;
+      const response = await apiRequest("POST", "/api/rides", {
+        ...rest,
+        whatsappLink,
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -323,23 +328,26 @@ export default function CreateRidePage() {
 
               <FormField
                 control={form.control}
-                name="whatsappLink"
+                name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>WhatsApp Link</FormLabel>
+                    <FormLabel>WhatsApp Phone Number</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <SiWhatsapp className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
-                        <Input
-                          placeholder="https://wa.me/91XXXXXXXXXX"
-                          className="pl-9"
-                          data-testid="input-whatsapp"
-                          {...field}
-                        />
+                        <div className="flex items-center">
+                          <span className="absolute left-9 text-muted-foreground">+91</span>
+                          <Input
+                            placeholder="XXXXXXXXXX"
+                            className="pl-16"
+                            data-testid="input-phone"
+                            {...field}
+                          />
+                        </div>
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Create your link at wa.me/your-number
+                      Enter your 10-digit phone number for WhatsApp
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

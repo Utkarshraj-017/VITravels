@@ -96,7 +96,7 @@ export default function LoginPage() {
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
-                            placeholder="John Doe"
+                            placeholder="Utkarsh Raj"
                             className="pl-9"
                             data-testid="input-login-name"
                             {...field}
@@ -119,7 +119,7 @@ export default function LoginPage() {
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             type="email"
-                            placeholder="you@example.com"
+                            placeholder="utkarsh.23bce10230@vitbhopal.ac.in"
                             className="pl-9"
                             data-testid="input-login-email"
                             {...field}

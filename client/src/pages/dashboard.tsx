@@ -158,6 +158,54 @@ export default function DashboardPage() {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
+          <h2 className="text-xl md:text-2xl font-semibold">My Rides</h2>
+          <Link href="/create-ride">
+            <Button variant="outline" size="sm" data-testid="link-create-ride-secondary">
+              <Plus className="mr-1 h-4 w-4" />
+              New Ride
+            </Button>
+          </Link>
+        </div>
+
+        {myRidesLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <Skeleton className="h-24 w-full" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-8 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : myRides && myRides.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myRides.map((ride) => (
+              <TripCard
+                key={ride.id}
+                ride={ride}
+                creator={user as UserType}
+                currentUserId={user?.id}
+                showBookButton={false}
+                showCreatorActions={true}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        ) : (
+          <Card className="p-8 text-center border-dashed">
+            <p className="text-muted-foreground">You haven't created any rides yet.</p>
+          </Card>
+        )}
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
           <h2 className="text-xl md:text-2xl font-semibold">Recent Rides</h2>
           <Link href="/trips">
             <Button variant="ghost" size="sm" data-testid="link-view-all-rides">
@@ -190,7 +238,7 @@ export default function DashboardPage() {
                 ride={ride}
                 creator={ride.creator}
                 currentUserId={user?.id}
-                showBookButton={false}
+                showBookButton={true}
               />
             ))}
           </div>
@@ -216,6 +264,19 @@ export default function DashboardPage() {
           </Card>
         )}
       </section>
+
+      <EditRideDialog
+        ride={editingRide}
+        open={!!editingRide}
+        onOpenChange={(open) => !open && setEditingRide(null)}
+      />
+
+      <DeleteRideDialog
+        open={!!deletingRideId}
+        onOpenChange={(open) => !open && setDeletingRideId(null)}
+        onConfirm={confirmDelete}
+        isDeleting={deleteMutation.isPending}
+      />
     </div>
   );
 }
