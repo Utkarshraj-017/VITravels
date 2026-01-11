@@ -95,33 +95,27 @@ Insert schemas validate client input, while full schemas include server-generate
 - PostgreSQL database (Neon recommended)
 
 ### Setup
-### Prerequisites
-- Node.js v20 or newer
-- PostgreSQL database (Neon recommended)
-
-### Setup
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/Utkarshraj-017/VITravels.git
    cd VITravels
+   ```
 2. Create a .env file in the project root:
-```
-
-DATABASE_URL=your_postgresql_connection_string
-PORT=5000
-NODE_ENV=development
-```
+    ```bash
+    DATABASE_URL=your_postgresql_connection_string
+    PORT=5000
+    NODE_ENV=development
+    ```
 3. Install dependencies:
-
-```
-npm install
-```
+    ```bash
+    npm install
+    ```
 4. Push database schema:
-```
-npx drizzle-kit push
-```
+    ```bash
+    npx drizzle-kit push
+    ```
 5. Start the development server:
-```
-npm run dev
-```
+    ```bash
+    npm run dev
+    ```
